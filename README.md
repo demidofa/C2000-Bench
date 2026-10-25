@@ -106,7 +106,7 @@ The simulator, the ten labs, their test programmes and the teaching materials we
 
 ## Authors
 
-Galina Demidova, Nikolai Poliakov, Dmitry Lukichev — Faculty of Control Systems and Robotics, ITMO University, Saint Petersburg.
+Galina Demidova — Faculty of Control Systems and Robotics, ITMO University, Saint Petersburg.
 
 ## License
 
