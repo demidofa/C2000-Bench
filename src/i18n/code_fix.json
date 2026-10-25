@@ -1,0 +1,30 @@
+{
+ "lab.js": [
+  [
+   "<html lang=\"ru\">",
+   "<html lang=\"en\">"
+  ],
+  [
+   "indexOf('Parameters') < 0",
+   "indexOf('arameters') < 0"
+  ],
+  [
+   "indexOf('Sensors') < 0",
+   "indexOf('ensors') < 0"
+  ]
+ ],
+ "page.html": [
+  [
+   "<label for=\"pVdc\">Udc, V</label>",
+   "<label for=\"pVdc\">U<span style=\"text-transform:none\">dc</span>, V</label>"
+  ],
+  [
+   "<label for=\"pL\">L, mH</label>",
+   "<label for=\"pL\">L, <span style=\"text-transform:none\">mH</span></label>"
+  ],
+  [
+   "<label for=\"pT\">Time, ms</label>",
+   "<label for=\"pT\">Time, <span style=\"text-transform:none\">ms</span></label>"
+  ]
+ ]
+}
