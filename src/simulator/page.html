@@ -1,0 +1,1291 @@
+<title>Стенд C2000</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Макет: рабочее место инженера - слева исходный текст и сообщения сборки, справа экран осциллографа и окна отладчика */
+:root {
+  --bg: #e9edf2;
+  --panel: #fafbfc;
+  --panel-2: #f1f4f7;
+  --line: #d2d9e2;
+  --fg: #16202b;
+  --muted: #5a6677;
+  --accent: #23529f;
+  --accent-soft: #dde7f7;
+  --accent-fg: #ffffff;
+  --ok: #26734a;
+  --warn: #9a6100;
+  --crit: #b0271f;
+  --ok-soft: #dcefe4;
+  --warn-soft: #f6ead2;
+  --crit-soft: #f7dcda;
+
+  --syn-com: #6f7b8a;
+  --syn-pre: #8a4fb3;
+  --syn-kw: #a1307a;
+  --syn-ty: #1f6d8c;
+  --syn-reg: #23529f;
+  --syn-cst: #8a5a00;
+  --syn-num: #2e7d4f;
+  --syn-fn: #3d4a8f;
+  --syn-str: #9b4a16;
+
+  --scope-bg: #0b1016;
+  --scope-grid: #1d2834;
+  --scope-grid-2: #2a3846;
+  --scope-fg: #c4cfdc;
+  --scope-dim: #7d8a99;
+  --ch-ctr: #f2c94c;
+  --ch-cmp: #ff9f43;
+  --ch-a: #4dd0e1;
+  --ch-b: #f06292;
+  --ch-v: #9ccc65;
+  --ch-i: #64b5f6;
+  --ch-var: #ce93d8;
+  --ch-isr: #8fa3b8;
+  --ch-trip: #ff6b6b;
+  --ch-cs: #e6ee9c;
+
+  --f-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-cond: "IBM Plex Sans Condensed", "Arial Narrow", "IBM Plex Sans", sans-serif;
+  --f-mono: "IBM Plex Mono", "Consolas", "Menlo", monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --panel: #141a22; --panel-2: #1a212b; --line: #28313d; --fg: #e2e8ef; --muted: #93a0b0;
+    --accent: #84a9ee; --accent-soft: #1d2a40; --accent-fg: #0d1117;
+    --ok: #5cc28a; --warn: #e0a63a; --crit: #f0766c; --ok-soft: #16301f; --warn-soft: #33270f; --crit-soft: #3a1a18;
+    --syn-com: #6d7a8a; --syn-pre: #c79bf0; --syn-kw: #f08bc4; --syn-ty: #6ccbe6; --syn-reg: #8fb3f5; --syn-cst: #e8bd6a; --syn-num: #8fd6a6; --syn-fn: #b6c2ff; --syn-str: #f0a878;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --panel: #141a22; --panel-2: #1a212b; --line: #28313d; --fg: #e2e8ef; --muted: #93a0b0;
+  --accent: #84a9ee; --accent-soft: #1d2a40; --accent-fg: #0d1117;
+  --ok: #5cc28a; --warn: #e0a63a; --crit: #f0766c; --ok-soft: #16301f; --warn-soft: #33270f; --crit-soft: #3a1a18;
+  --syn-com: #6d7a8a; --syn-pre: #c79bf0; --syn-kw: #f08bc4; --syn-ty: #6ccbe6; --syn-reg: #8fb3f5; --syn-cst: #e8bd6a; --syn-num: #8fd6a6; --syn-fn: #b6c2ff; --syn-str: #f0a878;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font-family: var(--f-ui); font-size: 14px; line-height: 1.45; }
+.app { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 24px; max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* шапка */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.brand { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.brand .part { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+.brand h1 { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: 26px; letter-spacing: .01em; text-wrap: balance; }
+.brand .sub { color: var(--muted); font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.fld { display: flex; flex-direction: column; gap: 3px; }
+.fld label { font-family: var(--f-cond); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.fld input { width: 76px; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: var(--r); padding: 6px 12px; font-size: 13px; }
+.btn:hover { border-color: var(--accent); }
+.btn-run { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; padding: 8px 16px; }
+.btn-run:disabled { opacity: .6; cursor: progress; }
+.kbd { font-family: var(--f-mono); font-size: 11px; opacity: .8; font-weight: 400; margin-left: 6px; }
+
+/* сетка */
+.grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto auto; gap: 12px; align-items: start; }
+.pane { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.left { grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel-2); flex-wrap: wrap; }
+.head h2 { margin: 0; font-family: var(--f-cond); font-weight: 600; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.head .file { font-family: var(--f-mono); font-size: 13px; font-weight: 500; color: var(--fg); text-transform: none; letter-spacing: 0; }
+.head .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.head .btn { padding: 4px 10px; font-size: 12px; }
+
+/* редактор */
+.ed { display: grid; grid-template-columns: 46px minmax(0, 1fr); height: 640px; background: var(--panel); }
+.gutter-wrap { overflow: hidden; border-right: 1px solid var(--line); background: var(--panel-2); position: relative; }
+.gutter { font-family: var(--f-mono); font-size: 12.5px; line-height: 20px; padding: 12px 8px 12px 0; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; will-change: transform; }
+.gutter div { height: 20px; }
+.gutter .err { color: var(--crit); font-weight: 600; background: var(--crit-soft); }
+.gutter .warn { color: var(--warn); font-weight: 600; background: var(--warn-soft); }
+.code-wrap { position: relative; overflow: hidden; min-width: 0; }
+.code-wrap pre, .code-wrap textarea { font-family: var(--f-mono); font-size: 12.5px; line-height: 20px; tab-size: 4; padding: 12px 14px; margin: 0; white-space: pre; letter-spacing: 0; }
+.code-wrap pre { position: absolute; top: 0; left: 0; min-width: 100%; pointer-events: none; color: var(--fg); will-change: transform; }
+.code-wrap textarea { position: absolute; inset: 0; width: 100%; height: 100%; resize: none; border: 0; outline: none; background: transparent; color: transparent; caret-color: var(--fg); overflow: auto; }
+.code-wrap textarea::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.t-com { color: var(--syn-com); font-style: italic; }
+.t-pre { color: var(--syn-pre); }
+.t-kw { color: var(--syn-kw); }
+.t-ty { color: var(--syn-ty); }
+.t-reg { color: var(--syn-reg); font-weight: 600; }
+.t-cst { color: var(--syn-cst); }
+.t-num { color: var(--syn-num); }
+.t-fn { color: var(--syn-fn); }
+.t-str { color: var(--syn-str); }
+
+/* сообщения */
+.status { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.pill { font-family: var(--f-cond); font-size: 12px; font-weight: 600; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.pill.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.pill.crit { background: var(--crit-soft); color: var(--crit); border-color: transparent; }
+.console { max-height: 300px; min-height: 120px; overflow: auto; font-size: 13px; }
+.msg { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 8px; padding: 7px 12px; border-bottom: 1px solid var(--line); }
+.msg:last-child { border-bottom: 0; }
+.msg .lvl { font-family: var(--f-cond); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.msg.err .lvl { color: var(--crit); }
+.msg.warn .lvl { color: var(--warn); }
+.msg.info .lvl { color: var(--muted); }
+.msg .meta { font-family: var(--f-mono); font-size: 11.5px; color: var(--muted); margin-right: 6px; font-variant-numeric: tabular-nums; }
+.msg .lnk { font-family: var(--f-mono); font-size: 11.5px; color: var(--accent); background: none; border: 0; padding: 0; margin-right: 6px; text-decoration: underline; text-underline-offset: 2px; }
+.empty { padding: 14px 12px; color: var(--muted); }
+
+/* осциллограф */
+.scope-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--panel-2); }
+.scope-bar .grp { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.seg { border: 1px solid var(--line); background: var(--panel); border-radius: var(--r); padding: 3px 9px; font-size: 12px; }
+.seg:hover { border-color: var(--accent); }
+.seg:disabled { opacity: .45; cursor: default; border-color: var(--line); }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px 2px 7px; font-size: 12px; background: var(--panel); font-family: var(--f-cond); font-weight: 500; }
+.chip i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.chip[aria-pressed="false"] { opacity: .45; }
+.chip[aria-pressed="false"] i { background: transparent !important; outline: 1px solid var(--muted); }
+.scope-box { position: relative; background: var(--scope-bg); }
+#scope { display: block; width: 100%; height: 470px; cursor: crosshair; touch-action: none; }
+.readout { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 7px 12px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--panel-2); font-variant-numeric: tabular-nums; min-height: 32px; }
+.readout b { color: var(--fg); font-weight: 500; }
+.busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--scope-bg) 70%, transparent); color: var(--scope-fg); font-family: var(--f-mono); font-size: 13px; }
+
+/* вкладки */
+.tabs { display: flex; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--line); background: var(--panel-2); overflow-x: auto; }
+.tab { border: 1px solid transparent; border-bottom: 0; background: none; padding: 7px 12px; font-family: var(--f-cond); font-weight: 600; font-size: 13px; letter-spacing: .02em; color: var(--muted); border-radius: 6px 6px 0 0; white-space: nowrap; }
+.tab[aria-selected="true"] { background: var(--panel); color: var(--fg); border-color: var(--line); margin-bottom: -1px; }
+.tabpanel { padding: 14px; max-height: 560px; overflow: auto; }
+
+.meas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.mcard { border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; border-left-width: 3px; }
+.mcard.ok { border-left-color: var(--ok); }
+.mcard.warn { border-left-color: var(--warn); }
+.mcard.crit { border-left-color: var(--crit); }
+.mcard .k { font-family: var(--f-cond); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.mcard .v { font-family: var(--f-mono); font-size: 18px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.mcard .n { font-size: 12.5px; color: var(--muted); }
+
+.regs-tools { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-bottom: 12px; }
+.regs-tools label { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; }
+.rgroup { margin-bottom: 16px; }
+.rgroup h3 { margin: 0 0 6px; font-family: var(--f-mono); font-size: 13.5px; font-weight: 600; }
+.rgroup h3 span { font-family: var(--f-ui); font-weight: 400; color: var(--muted); margin-left: 6px; }
+.rtable { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.rtable td { border-top: 1px solid var(--line); padding: 6px 6px; vertical-align: top; }
+.rtable td.rn { font-family: var(--f-mono); font-weight: 500; white-space: nowrap; width: 1%; }
+.rtable td.rv { font-family: var(--f-mono); white-space: nowrap; width: 1%; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rtable td.rv.ch { color: var(--accent); font-weight: 600; }
+.rtable .doc { color: var(--muted); font-size: 12px; margin-bottom: 3px; }
+.fl { display: flex; flex-wrap: wrap; gap: 4px; }
+.fc { font-family: var(--f-mono); font-size: 11.5px; padding: 1px 6px; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); white-space: nowrap; }
+.fc.ch { background: var(--accent-soft); border-color: transparent; color: var(--fg); }
+.fc em { font-style: normal; color: var(--muted); }
+.tbl-wrap { overflow-x: auto; }
+
+.vtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vtable th { text-align: left; font-family: var(--f-cond); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px; border-bottom: 1px solid var(--line); }
+.vtable td { padding: 6px; border-bottom: 1px solid var(--line); font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; margin: 10px 0 0; max-width: 70ch; }
+
+.exps { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.exp { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.exp h4 { margin: 0; font-family: var(--f-cond); font-size: 15px; font-weight: 600; }
+.exp .lbl { font-family: var(--f-cond); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.exp p { margin: 0; font-size: 13px; }
+.exp code { font-family: var(--f-mono); font-size: 12px; background: var(--panel-2); padding: 0 4px; border-radius: 3px; }
+.exp .row { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; flex-wrap: wrap; }
+.help { max-width: 78ch; font-size: 13.5px; }
+.help h3 { font-family: var(--f-cond); font-size: 15px; margin: 14px 0 4px; }
+.help h3:first-child { margin-top: 0; }
+.help p, .help li { margin: 4px 0; }
+.help code { font-family: var(--f-mono); font-size: 12.5px; background: var(--panel-2); padding: 0 4px; border-radius: 3px; }
+
+/* приемка */
+.acc-form { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin-bottom: 12px; }
+.acc-form .fld input, .acc-form .fld select { width: auto; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); font-size: 13px; font-family: var(--f-ui); }
+.acc-form #accWho { width: 220px; } .acc-form #accGroup { width: 100px; } .acc-form #accVar { width: 70px; font-family: var(--f-mono); }
+.acc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+.acc-h { font-family: var(--f-cond); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+.acc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.acc-table th { text-align: left; font-family: var(--f-cond); font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 6px; border-bottom: 1px solid var(--line); }
+.acc-table td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.acc-table td.num { font-family: var(--f-mono); color: var(--muted); white-space: nowrap; }
+.acc-table td.meas { font-family: var(--f-mono); font-size: 12px; }
+.acc-sum { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 12px 0 4px; font-size: 14px; }
+.acc-sum b { font-weight: 600; }
+.acc-runs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; font-size: 13px; color: var(--muted); }
+@media (max-width: 1100px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .left { grid-row: auto; }
+  .ed { height: 480px; }
+  #scope { height: 420px; }
+}
+@media (max-width: 560px) {
+  .brand h1 { font-size: 22px; }
+  .fld input { width: 64px; }
+  #scope { height: 380px; }
+  .ed { height: 420px; }
+}
+/* диалог подтверждения замены текста */
+.dlg-back { position: fixed; inset: 0; background: rgba(10, 16, 24, .45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.dlg { background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; max-width: 520px; width: 100%; padding: 18px 20px; box-shadow: 0 12px 40px rgba(0, 0, 0, .25); }
+.dlg h3 { margin: 0 0 8px; font-size: 16px; }
+.dlg p { margin: 0 0 14px; font-size: 14px; line-height: 1.45; color: var(--fg); }
+.dlg .row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.dlg .btn-danger { border-color: var(--crit); color: var(--crit); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="part">TMS320F2837xD · ePWM1 · PIE · стойка инвертора</span>
+      <h1>Стенд C2000</h1>
+      <span class="sub">Программа на C для кристалла, исполняемая на модели вместо отладочной платы</span>
+    </div>
+    <div class="controls">
+      <div class="fld"><label for="pVdc">Udc, В</label><input id="pVdc" type="number" value="48" min="1" step="1"></div>
+      <div class="fld"><label for="pR">R, Ом</label><input id="pR" type="number" value="2" min="0.01" step="0.1"></div>
+      <div class="fld"><label for="pL">L, мГн</label><input id="pL" type="number" value="5" min="0.01" step="0.1"></div>
+      <div class="fld"><label for="pT">Время, мс</label><input id="pT" type="number" value="60" min="1" max="200" step="10"></div>
+      <button class="btn btn-run" id="run" type="button">Собрать и запустить<span class="kbd">Ctrl+Enter</span></button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div class="left">
+      <section class="pane" aria-label="Исходный текст">
+        <div class="head">
+          <h2><span class="file">app.c</span></h2>
+          <div class="acts">
+            <button class="btn" id="copy" type="button">Копировать для CCS</button>
+            <button class="btn" id="reset" type="button">Исходный текст</button>
+          </div>
+        </div>
+        <div class="ed">
+          <div class="gutter-wrap"><div class="gutter" id="gutter"></div></div>
+          <div class="code-wrap">
+            <pre id="hl" aria-hidden="true"></pre>
+            <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Текст программы на C"></textarea>
+          </div>
+        </div>
+      </section>
+      <section class="pane" aria-label="Сообщения">
+        <div class="head">
+          <h2>Сообщения</h2>
+          <div class="status" id="status"></div>
+        </div>
+        <div class="console" id="console"><div class="empty">Нажмите «Собрать и запустить».</div></div>
+      </section>
+    </div>
+
+    <section class="pane" aria-label="Осциллограф">
+      <div class="scope-bar">
+        <div class="grp" id="views">
+          <button class="seg" data-view="all" type="button">Весь интервал</button>
+          <button class="seg" data-view="two" type="button">Два периода ШИМ</button>
+          <button class="seg" data-view="dead" type="button">Мертвое время</button>
+          <button class="seg" data-view="trip" type="button">Авария</button>
+          <button class="seg" data-zoom="in" type="button" aria-label="Растянуть">+</button>
+          <button class="seg" data-zoom="out" type="button" aria-label="Сжать">−</button>
+        </div>
+        <div class="grp" id="chips"></div>
+      </div>
+      <div class="scope-box">
+        <canvas id="scope"></canvas>
+        <div class="busy" id="busy" hidden>Моделирование…</div>
+      </div>
+      <div class="readout" id="readout">Колесо мыши меняет масштаб времени, перетаскивание сдвигает окно, двойной щелчок показывает весь интервал.</div>
+    </section>
+
+    <section class="pane" aria-label="Окна отладки">
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab" role="tab" data-tab="meas" aria-selected="true" type="button">Измерения</button>
+        <button class="tab" role="tab" data-tab="acc" aria-selected="false" type="button">Приемка</button>
+        <button class="tab" role="tab" data-tab="regs" aria-selected="false" type="button">Регистры</button>
+        <button class="tab" role="tab" data-tab="vars" aria-selected="false" type="button">Переменные</button>
+        <button class="tab" role="tab" data-tab="exps" aria-selected="false" type="button">Опыты</button>
+        <button class="tab" role="tab" data-tab="help" aria-selected="false" type="button">Справка</button>
+      </div>
+      <div class="tabpanel" id="tp-meas"></div>
+      <div class="tabpanel" id="tp-acc" hidden></div>
+      <div class="tabpanel" id="tp-regs" hidden></div>
+      <div class="tabpanel" id="tp-vars" hidden></div>
+      <div class="tabpanel" id="tp-exps" hidden></div>
+      <div class="tabpanel" id="tp-help" hidden></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/*__CORE__*/
+</script>
+<script>
+/*__LAB__*/
+window.C2K_STUDENT = { lr1: /*__STUDENT_LR1__*/'', lr2: /*__STUDENT_LR2__*/'', lr3: /*__STUDENT_LR3__*/'', lr4: /*__STUDENT_LR4__*/'', lr5: /*__STUDENT_LR5__*/'', lr6: /*__STUDENT_LR6__*/'', lr7: /*__STUDENT_LR7__*/'', lr8: /*__STUDENT_LR8__*/'', lr9: /*__STUDENT_LR9__*/'', lr10: /*__STUDENT_LR10__*/'' };
+window.C2K_VERSION = '1.10';
+</script>
+<script>
+(function () {
+  'use strict';
+  var TEMPLATE = /*__TEMPLATE__*/'';
+  var LS_KEY = 'c2k-step1-code-v1';
+  var $ = function (s) { return document.querySelector(s); };
+  var ta = $('#code'), hl = $('#hl'), gut = $('#gutter');
+  var marks = {};
+  var last = null;          // результат последнего прогона
+  var traceVar = null;
+
+  /* ---------------- редактор ---------------- */
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  var KW = {}, TY = {}, RG = {};
+  'if else for while do return switch case default break continue void volatile static const extern inline __interrupt interrupt sizeof'.split(' ').forEach(function (w) { KW[w] = 1; });
+  'Uint16 Uint32 Uint64 int16 int32 int64 int long short char float double float32 float64 bool unsigned signed'.split(' ').forEach(function (w) { TY[w] = 1; });
+  'EPwm1Regs CpuSysRegs GpioCtrlRegs InputXbarRegs AdcaRegs AdcaResultRegs PieCtrlRegs PieVectTable IER IFR'.split(' ').forEach(function (w) { RG[w] = 1; });
+  var TOK = /(\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$))|(^[ \t]*#[^\n]*)|("(?:[^"\\\n]|\\.)*"?)|(\b(?:0[xX][0-9a-fA-F]+|\d+\.?\d*(?:[eE][+-]?\d+)?[fFuUlL]*)\b)|([A-Za-z_]\w*)(\s*\()?/gm;
+  function highlight(src) {
+    var out = '', lastI = 0, m;
+    TOK.lastIndex = 0;
+    while ((m = TOK.exec(src))) {
+      out += esc(src.slice(lastI, m.index));
+      if (m[1]) out += '<span class="t-com">' + esc(m[1]) + '</span>';
+      else if (m[2]) out += '<span class="t-pre">' + esc(m[2]) + '</span>';
+      else if (m[3]) out += '<span class="t-str">' + esc(m[3]) + '</span>';
+      else if (m[4]) out += '<span class="t-num">' + esc(m[4]) + '</span>';
+      else if (m[5]) {
+        var w = m[5];
+        var cls = KW[w] ? 't-kw' : TY[w] ? 't-ty' : RG[w] ? 't-reg' : (/^[A-Z][A-Z0-9_]+$/.test(w) && w.length > 2) ? 't-cst' : m[6] ? 't-fn' : '';
+        out += cls ? '<span class="' + cls + '">' + w + '</span>' : w;
+        if (m[6]) out += esc(m[6]);
+      }
+      lastI = TOK.lastIndex;
+      if (m[0].length === 0) TOK.lastIndex++;
+    }
+    return out + esc(src.slice(lastI)) + '\n';
+  }
+  function renderEditor() {
+    hl.innerHTML = highlight(ta.value);
+    var n = ta.value.split('\n').length, h = '';
+    for (var k = 1; k <= n; k++) h += '<div' + (marks[k] ? ' class="' + marks[k] + '"' : '') + '>' + k + '</div>';
+    gut.innerHTML = h;
+    syncScroll();
+  }
+  function syncScroll() {
+    hl.style.transform = 'translate(' + (-ta.scrollLeft) + 'px,' + (-ta.scrollTop) + 'px)';
+    gut.style.transform = 'translateY(' + (-ta.scrollTop) + 'px)';
+  }
+  var saveT = null;
+  ta.addEventListener('input', function () {
+    renderEditor();
+    clearTimeout(saveT);
+    saveT = setTimeout(function () { try { localStorage.setItem(LS_KEY, ta.value); } catch (e) {} }, 400);
+  });
+  ta.addEventListener('scroll', syncScroll);
+  ta.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runSim(); return; }
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      var s = ta.selectionStart, en = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + '    ' + ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s + 4;
+      ta.dispatchEvent(new Event('input'));
+    }
+  });
+  function gotoLine(line) {
+    var lines = ta.value.split('\n'), pos = 0;
+    for (var k = 0; k < line - 1 && k < lines.length; k++) pos += lines[k].length + 1;
+    ta.focus();
+    ta.setSelectionRange(pos, pos + (lines[line - 1] || '').length);
+    ta.scrollTop = Math.max(0, (line - 6) * 20);
+    syncScroll();
+  }
+  function setCode(src) { ta.value = src; try { localStorage.setItem(LS_KEY, src); } catch (e) {} marks = {}; renderEditor(); }
+
+  var initial = TEMPLATE;
+  try { var saved = localStorage.getItem(LS_KEY); if (saved) initial = saved; } catch (e) {}
+  ta.value = initial;
+  renderEditor();
+
+  // замена текста программы с подтверждением, если текущий текст может быть потерян
+  function knownText(src) {
+    var t = (src || '').replace(/\r/g, '').trim();
+    if (!t || t === TEMPLATE.replace(/\r/g, '').trim()) return true;
+    var S = window.C2K_STUDENT || {};
+    return Object.keys(S).some(function (k) { return S[k] && S[k].replace(/\r/g, '').trim() === t; });
+  }
+  function replaceCode(src, what, name, after) {
+    function go() {
+      setCode(src);
+      if (window.C2KUI && window.C2KUI.onReplaced) window.C2KUI.onReplaced(name || 'app.c');
+      if (after) after(); else runSim();
+    }
+    var U = window.C2KUI || {};
+    if (ta.value === src || knownText(ta.value) || (U.isSaved && U.isSaved())) { go(); return; }
+    var back = document.createElement('div');
+    back.className = 'dlg-back';
+    back.innerHTML = '<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT"><h3 id="dlgT">Заменить текст программы?</h3>' +
+      '<p>В редакторе будет ' + esc(what) + '. Текущий текст программы не сохранен в файл и будет потерян.</p><div class="row">' +
+      (U.saveCode ? '<button class="btn btn-run" type="button" data-a="save">Сохранить и заменить</button>' : '<button class="btn" type="button" data-a="copy">Копировать текущий текст</button>') +
+      '<button class="btn btn-danger" type="button" data-a="go">Заменить без сохранения</button>' +
+      '<button class="btn" type="button" data-a="no">Отмена</button></div></div>';
+    function close() { document.removeEventListener('keydown', onKey, true); back.remove(); }
+    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); close(); } }
+    back.addEventListener('click', function (e) {
+      if (e.target === back) { close(); return; }
+      var b = e.target.closest('[data-a]'); if (!b) return;
+      var a = b.dataset.a;
+      if (a === 'no') close();
+      else if (a === 'go') { close(); go(); }
+      else if (a === 'copy') {
+        try { navigator.clipboard.writeText(ta.value).then(function () { b.textContent = 'Скопировано'; }, function () { b.textContent = 'Копирование недоступно'; }); }
+        catch (x) { b.textContent = 'Копирование недоступно'; }
+      } else if (a === 'save') {
+        Promise.resolve(U.saveCode()).then(function (ok) { if (ok) { close(); go(); } });
+      }
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(back);
+    var f = back.querySelector('[data-a="no"]'); if (f) f.focus();
+  }
+  $('#reset').addEventListener('click', function () {
+    var U = window.C2KUI || {};
+    if (U.resetHook) U.resetHook(); else replaceCode(TEMPLATE, 'исходный текст программы шага 1 (ЛР1)', 'app.c');
+  });
+  $('#copy').addEventListener('click', function () {
+    var b = $('#copy'), txt = ta.value;
+    function done(ok) { b.textContent = ok ? 'Скопировано' : 'Текст выделен, нажмите Ctrl+C'; setTimeout(function () { b.textContent = 'Копировать для CCS'; }, 1800); }
+    try {
+      navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { ta.focus(); ta.select(); done(false); });
+    } catch (e) { ta.focus(); ta.select(); done(false); }
+  });
+
+  /* ---------------- компиляция в браузере ---------------- */
+  var browserCompiler = {
+    mode: null, offset: null,
+    inject: function (body) {
+      var err = null;
+      function h(e) { err = e; e.preventDefault(); }
+      window.addEventListener('error', h);
+      try { delete window.__c2kFactory; } catch (e) { window.__c2kFactory = undefined; }
+      var s = document.createElement('script');
+      s.textContent = 'window.__c2kFactory=function(__env){with(__env){\n' + body + '\n}};\n//# sourceURL=app.c.js';
+      document.head.appendChild(s); s.remove();
+      window.removeEventListener('error', h);
+      if (typeof window.__c2kFactory === 'function') return { factory: window.__c2kFactory };
+      if (err) return { error: { line: err.lineno ? err.lineno - 1 : null, text: C2K.syntaxRu(err.error || err) } };
+      return { blocked: true };
+    },
+    viaFunction: function (body) {
+      try { return { factory: new Function('__env', 'with(__env){\n' + body + '\n}\n//# sourceURL=app.c.js') }; }
+      catch (e) { return { error: { line: null, text: C2K.syntaxRu(e) } }; }
+    },
+    build: function (body) {
+      if (this.mode !== 'fn') {
+        var r = this.inject(body);
+        if (!r.blocked) { this.mode = 'inject'; return r; }
+        this.mode = 'fn';
+      }
+      return this.viaFunction(body);
+    },
+    calibrate: function () {
+      var r = this.build('throw new Error("c2k-cal")');
+      if (r.factory) { try { r.factory({}); } catch (e) { var l = C2K.stackLine(e); if (l !== null) return l - 1; } }
+      return this.mode === 'fn' ? 3 : 1;
+    },
+    compile: function (tr) {
+      if (this.offset === null) this.offset = this.calibrate();
+      return this.build(tr.js + C2K.factorySource(tr));
+    }
+  };
+
+  /* ---------------- прогон ---------------- */
+  var running = false;
+  function params() {
+    var p = { Vdc: +$('#pVdc').value, R: +$('#pR').value, L: +$('#pL').value, Tsim: +$('#pT').value, traceVar: traceVar };
+    if (window.C2KUI && window.C2KUI.paramsHook) window.C2KUI.paramsHook(p);
+    return p;
+  }
+  function setStatus(items) {
+    $('#status').innerHTML = items.map(function (it) { return '<span class="pill ' + (it[1] || '') + '">' + esc(it[0]) + '</span>'; }).join('');
+  }
+  function fmtMs(t) { return t.toFixed(3) + ' мс'; }
+  function renderConsole(list) {
+    var c = $('#console');
+    if (!list.length) { c.innerHTML = '<div class="empty">Сообщений нет.</div>'; return; }
+    var names = { err: 'Ошибка', warn: 'Внимание', info: 'Сведения' };
+    c.innerHTML = list.map(function (m, ix) {
+      return '<div class="msg ' + m.lvl + '"><div class="lvl">' + names[m.lvl] + '</div><div>' +
+        (m.t !== null && m.t !== undefined ? '<span class="meta">t = ' + fmtMs(m.t) + '</span>' : '') +
+        (m.line ? '<button class="lnk" type="button" data-line="' + m.line + '">стр. ' + m.line + '</button>' : '') +
+        esc(m.text) + '</div></div>';
+    }).join('');
+  }
+  $('#console').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-line]');
+    if (b) gotoLine(+b.dataset.line);
+  });
+
+  function runSim() {
+    if (running) return;
+    running = true;
+    var btn = $('#run'); btn.disabled = true;
+    marks = {};
+    var o = C2K.compileAndCreate(ta.value, params(), browserCompiler);
+    var list = [];
+    o.warnings.forEach(function (w) { list.push({ lvl: 'warn', text: w.text, line: w.line, t: null }); if (w.line) marks[w.line] = 'warn'; });
+    if (o.errors.length) {
+      o.errors.forEach(function (er) { list.push({ lvl: 'err', text: er.text, line: er.line, t: null }); if (er.line) marks[er.line] = 'err'; });
+      renderConsole(list); renderEditor();
+      setStatus([['Сборка: ошибок ' + o.errors.length, 'crit']]);
+      btn.disabled = false; running = false;
+      return;
+    }
+    var r = o.run;
+    $('#busy').hidden = false;
+    setStatus([['Сборка без ошибок', 'ok'], ['Моделирование…', '']]);
+    var ok = r.start(o.compiled, o.lineOffset);
+    function step() {
+      var s = ok ? r.advance(1500000) : { done: true };
+      if (!s.done) {
+        $('#busy').textContent = 'Моделирование… ' + Math.round(s.progress * 100) + '%';
+        setTimeout(step, 0);
+        return;
+      }
+      var f = r.finish();
+      if (f.P && f.P.traceVar) traceVar = f.P.traceVar;
+      last = f;
+      renderChips();
+      f.msgs.forEach(function (m) { list.push(m); if (m.line) marks[m.line] = m.lvl === 'err' ? 'err' : (marks[m.line] || 'warn'); });
+      renderConsole(list); renderEditor();
+      var nErr = list.filter(function (m) { return m.lvl === 'err'; }).length;
+      var nWarn = list.filter(function (m) { return m.lvl === 'warn'; }).length;
+      var st = [['Сборка без ошибок', 'ok']];
+      st.push([(f.halted ? 'Остановлено на ' : 'Модель ') + (f.endTick / 1e5).toFixed(1) + ' мс', f.halted ? 'crit' : '']);
+      st.push(['Прерываний: ' + f.isrCount, f.isrCount > 1 ? '' : 'warn']);
+      if (nErr) st.push(['Ошибок: ' + nErr, 'crit']);
+      if (nWarn) st.push(['Замечаний: ' + nWarn, 'warn']);
+      setStatus(st);
+      $('#busy').hidden = true; $('#busy').textContent = 'Моделирование…';
+      btn.disabled = false; running = false;
+      setView('all');
+      renderMeas(); renderRegs(); renderVars();
+    }
+    setTimeout(step, 0);
+  }
+  $('#run').addEventListener('click', runSim);
+
+  function tzInfo(f) {
+    var ev = (f.logs && f.logs.tzEv) || [], en = 0, trip = null;
+    if (ev.length && ev[1] === 'FRC' && ev[0] <= 10) {
+      en = null;
+      for (var k = 0; k < ev.length; k += 2) if (ev[k + 1] === 'CLR') { en = ev[k]; break; }
+    }
+    if (en !== null) for (var j = 0; j < ev.length; j += 2) if (ev[j] > en && ev[j + 1] !== 'CLR') { trip = ev[j]; break; }
+    if (!ev.length) trip = f.tripTick;
+    return { en: en, trip: trip };
+  }
+  window.C2KTz = tzInfo;
+  function showResult(f, label) {
+    last = f;
+    if (f.P && f.P.traceVar) { traceVar = f.P.traceVar; }
+    renderChips();
+    setView('all');
+    renderMeas(); renderRegs(); renderVars();
+    var list = f.msgs.slice();
+    renderConsole(list);
+    setStatus([[label || 'Результат испытания', ''], ['Модель ' + (f.endTick / 1e5).toFixed(1) + ' мс', f.halted ? 'crit' : ''], ['Прерываний: ' + f.isrCount, '']]);
+  }
+  window.C2KUI = {
+    getCode: function () { return ta.value; },
+    setCode: function (src) { setCode(src); },
+    replaceCode: replaceCode,
+    template: TEMPLATE,
+    compiler: browserCompiler,
+    showResult: showResult,
+    esc: esc,
+    isRunning: function () { return running; }
+  };
+  ['pVdc', 'pR', 'pL', 'pT'].forEach(function (id) {
+    $('#' + id).addEventListener('keydown', function (e) { if (e.key === 'Enter') runSim(); });
+  });
+
+  /* ---------------- осциллограф ---------------- */
+  var cv = $('#scope'), ctx = cv.getContext('2d');
+  var view = { t0: 0, t1: 0.06 };
+  var hoverX = null;
+  var CH = [
+    { id: 'ctr', name: 'TBCTR, CMPA', color: '--ch-ctr', w: 2.6, on: true },
+    { id: 'a', name: 'EPWM1A', color: '--ch-a', w: 0.9, on: true },
+    { id: 'b', name: 'EPWM1B', color: '--ch-b', w: 0.9, on: true },
+    { id: 'a2', name: 'EPWM2A', color: '--ch-a', w: 0.9, on: true },
+    { id: 'b2', name: 'EPWM2B', color: '--ch-b', w: 0.9, on: true },
+    { id: 'a3', name: 'EPWM3A', color: '--ch-a', w: 0.9, on: true },
+    { id: 'b3', name: 'EPWM3B', color: '--ch-b', w: 0.9, on: true },
+    { id: 'v', name: 'u стойки', color: '--ch-v', w: 1.1, on: true },
+    { id: 'i', name: 'i нагрузки', color: '--ch-i', w: 2.6, on: true },
+    { id: 'i2', name: 'i фазы B', color: '--ch-cs', w: 2.0, on: true },
+    { id: 'var', name: 'переменная', color: '--ch-var', w: 1.8, on: true },
+    { id: 'flt', name: 'вход TZ1', color: '--ch-trip', w: 0.7, on: true },
+    { id: 'cs', name: 'датчик тока', color: '--ch-cs', w: 1.4, on: true },
+    { id: 'w', name: 'частота вращения', color: '--ch-var', w: 1.4, on: true }
+  ];
+  function hasM2(f) { return !!(f && f.logs.ed && f.logs.ed[1] && f.logs.ed[1].A.length + f.logs.ed[1].B.length > 4); }
+  function hasW(f) { return !!(f && f.logs.wS && f.P.motor && (f.P.plant === 'pm3' || f.P.motor.locked === false || (f.P.loadEvents || []).some(function (e) { return e.locked === false; }))); }
+  function isHB(f) { return !!(f && f.P.plant === 'hbdc'); }
+  function isIM(f) { return !!(f && (f.P.plant === 'im3' || f.P.plant === 'pm3')); }
+  function isPM(f) { return !!(f && f.P.plant === 'pm3'); }
+  function hasM3(f) { return !!(f && f.logs.ed && f.logs.ed[2] && f.logs.ed[2].A.length + f.logs.ed[2].B.length > 4); }
+  function renderChips() {
+    $('#chips').innerHTML = CH.map(function (c) {
+      if (c.id === 'var' && !traceVar) return '';
+      if (c.id === 'flt' && !(last && last.logs.pinEd && last.logs.pinEd.length)) return '';
+      if (c.id === 'cs' && !(last && last.logs.csS && last.logs.csN)) return '';
+      if ((c.id === 'a2' || c.id === 'b2') && !hasM2(last)) return '';
+      if ((c.id === 'a3' || c.id === 'b3') && !hasM3(last)) return '';
+      if (c.id === 'i2' && !isIM(last)) return '';
+      if (c.id === 'w' && !hasW(last)) return '';
+      var nm = c.id === 'var' ? traceVar : c.id === 'v' && isHB(last) ? 'u якоря' : c.id === 'i' && isHB(last) ? 'i якоря' : c.id === 'v' && isIM(last) ? 'u фазы A' : c.id === 'i' && isIM(last) ? 'i фазы A' : c.name;
+      return '<button class="chip" type="button" data-ch="' + c.id + '" aria-pressed="' + c.on + '"><i style="background:var(' + c.color + ')"></i>' + esc(nm) + '</button>';
+    }).join('');
+  }
+  $('#chips').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ch]'); if (!b) return;
+    var c = CH.find(function (x) { return x.id === b.dataset.ch; });
+    c.on = !c.on; renderChips(); draw();
+  });
+  renderChips();
+
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function bsearch(arr, tick) { // последний четный индекс с arr[i] <= tick
+    var lo = 0, hi = arr.length / 2 - 1, ans = -1;
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (arr[mid * 2] <= tick) { ans = mid; lo = mid + 1; } else hi = mid - 1; }
+    return ans * 2;
+  }
+  function niceStep(span) {
+    var raw = span / 10, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p;
+    return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p;
+  }
+  function fmtT(s) {
+    var a = Math.abs(s);
+    if (a === 0) return '0';
+    if (a < 1e-6) return +(s * 1e9).toFixed(1) + ' нс';
+    if (a < 1e-3) return +(s * 1e6).toFixed(3) + ' мкс';
+    if (a < 1) return +(s * 1e3).toFixed(3) + ' мс';
+    return +s.toFixed(3) + ' с';
+  }
+
+  // ступенчатый сигнал [тик, значение, ...] -> столбцы пикселей
+  function drawStep(arr, endTick, X, Y, x0, pw, tA, tB) {
+    if (!arr.length) return;
+    var k = bsearch(arr, tA); if (k < 0) k = 0;
+    var cols = pw | 0, mn = new Float64Array(cols + 1).fill(NaN), mx = new Float64Array(cols + 1).fill(NaN),
+      fs = new Float64Array(cols + 1).fill(NaN), ls = new Float64Array(cols + 1).fill(NaN);
+    for (var j = k; j < arr.length; j += 2) {
+      var ta0 = Math.max(arr[j], tA), tb0 = (j + 2 < arr.length) ? arr[j + 2] : endTick;
+      if (ta0 > tB) break;
+      if (tb0 < tA) continue;
+      tb0 = Math.min(tb0, tB);
+      var v = arr[j + 1];
+      var pa = Math.max(0, Math.floor(X(ta0) - x0)), pb = Math.min(cols, Math.floor(X(tb0) - x0));
+      for (var p = pa; p <= pb; p++) {
+        if (isNaN(fs[p])) fs[p] = v;
+        ls[p] = v;
+        if (isNaN(mn[p]) || v < mn[p]) mn[p] = v;
+        if (isNaN(mx[p]) || v > mx[p]) mx[p] = v;
+      }
+    }
+    ctx.beginPath();
+    var started = false;
+    for (var q = 0; q <= cols; q++) {
+      if (isNaN(fs[q])) { started = false; continue; }
+      var x = x0 + q + 0.5;
+      if (!started) { ctx.moveTo(x, Y(fs[q])); started = true; } else ctx.lineTo(x, Y(fs[q]));
+      if (mn[q] !== mx[q]) { ctx.lineTo(x, Y(mn[q])); ctx.lineTo(x, Y(mx[q])); }
+      ctx.lineTo(x, Y(ls[q]));
+    }
+    ctx.stroke();
+  }
+  // кусочно-линейный сигнал по вершинам
+  function drawLine(arr, X, Y, x0, pw, tA, tB) {
+    if (arr.length < 4) return;
+    var k = bsearch(arr, tA); if (k < 0) k = 0;
+    var e = bsearch(arr, tB) + 2; if (e >= arr.length) e = arr.length - 2;
+    var n = (e - k) / 2;
+    ctx.beginPath();
+    if (n < pw * 2) {
+      ctx.moveTo(X(arr[k]), Y(arr[k + 1]));
+      for (var j = k + 2; j <= e; j += 2) ctx.lineTo(X(arr[j]), Y(arr[j + 1]));
+    } else {
+      var cols = pw | 0, mn = new Float64Array(cols + 1).fill(NaN), mx = new Float64Array(cols + 1).fill(NaN);
+      for (var i = k; i <= e; i += 2) {
+        var p = Math.floor(X(arr[i]) - x0); if (p < 0 || p > cols) continue;
+        var v = arr[i + 1];
+        if (isNaN(mn[p]) || v < mn[p]) mn[p] = v;
+        if (isNaN(mx[p]) || v > mx[p]) mx[p] = v;
+      }
+      for (var q = 0; q <= cols; q++) {
+        if (isNaN(mn[q])) continue;
+        var x = x0 + q + 0.5;
+        ctx.moveTo(x, Y(mn[q])); ctx.lineTo(x, Y(mx[q]) - 0.5);
+      }
+    }
+    ctx.stroke();
+  }
+  function drawSamples(buf, n, dec, X, Y, x0, pw, tA, tB) {
+    var kA = Math.max(0, Math.floor(tA / dec) - 2), kB = Math.min(n - 1, Math.ceil(tB / dec) + 1);
+    if (kB <= kA) return;
+    ctx.beginPath();
+    if (kB - kA < pw * 2) {
+      ctx.moveTo(X((kA + 1) * dec), Y(buf[kA]));
+      for (var k = kA + 1; k <= kB; k++) ctx.lineTo(X((k + 1) * dec), Y(buf[k]));
+    } else {
+      var cols = pw | 0, mn = new Float64Array(cols + 1).fill(NaN), mx = new Float64Array(cols + 1).fill(NaN);
+      for (var i = kA; i <= kB; i++) {
+        var p = Math.floor(X((i + 1) * dec) - x0); if (p < 0 || p > cols) continue;
+        var v = buf[i];
+        if (isNaN(mn[p]) || v < mn[p]) mn[p] = v;
+        if (isNaN(mx[p]) || v > mx[p]) mx[p] = v;
+      }
+      var st = false;
+      for (var q = 0; q <= cols; q++) {
+        if (isNaN(mn[q])) continue;
+        var x = x0 + q + 0.5;
+        if (!st) { ctx.moveTo(x, Y(mn[q])); st = true; } else ctx.lineTo(x, Y(mn[q]));
+        ctx.lineTo(x, Y(mx[q]));
+      }
+    }
+    ctx.stroke();
+  }
+  function rangeSamples(buf, n, dec, tA, tB) {
+    var kA = Math.max(0, Math.floor(tA / dec)), kB = Math.min(n - 1, Math.ceil(tB / dec));
+    var mn = Infinity, mx = -Infinity;
+    for (var k = kA; k <= kB; k++) { var v = buf[k]; if (v < mn) mn = v; if (v > mx) mx = v; }
+    return [mn, mx];
+  }
+  function rangeStep(arr, tA, tB) {
+    var mn = Infinity, mx = -Infinity, k = bsearch(arr, tA); if (k < 0) k = 0;
+    for (var j = k; j < arr.length && arr[j] <= tB; j += 2) { var v = arr[j + 1]; if (isFinite(v)) { if (v < mn) mn = v; if (v > mx) mx = v; } }
+    return [mn, mx];
+  }
+  function niceRange(mn, mx, sym) {
+    if (!isFinite(mn) || !isFinite(mx)) { mn = -1; mx = 1; }
+    if (sym) { var a = Math.max(Math.abs(mn), Math.abs(mx), 0.05); mn = -a; mx = a; }
+    if (mx - mn < 1e-9) { mn -= 1; mx += 1; }
+    var pad = (mx - mn) * 0.1;
+    return [mn - pad, mx + pad];
+  }
+  function fmtV(v) { var a = Math.abs(v); return a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(2); }
+
+  var laneGeom = [];
+  function draw() {
+    var dpr = window.devicePixelRatio || 1;
+    var W = cv.clientWidth, H = cv.clientHeight;
+    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = css('--scope-bg'); ctx.fillRect(0, 0, W, H);
+    var fg = css('--scope-fg'), dim = css('--scope-dim'), grid = css('--scope-grid'), grid2 = css('--scope-grid-2');
+    var x0 = 62, x1 = W - 14, y0 = 10, y1 = H - 40, pw = Math.max(10, x1 - x0);
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    if (!last) {
+      ctx.fillStyle = dim; ctx.fillText('Нет данных', x0 + 10, y0 + 20); return;
+    }
+    var L = last.logs, HZ = last.tickHz, endTick = last.endTick;
+    var tA = view.t0 * HZ, tB = view.t1 * HZ;
+    var X = function (tick) { return x0 + (tick - tA) / (tB - tA) * pw; };
+
+    var lanes = CH.filter(function (c) { return c.on && (c.id !== 'var' || (traceVar && L.varT.length)) && (c.id !== 'flt' || (L.pinEd && L.pinEd.length)) && (c.id !== 'cs' || (L.csS && L.csN)) && ((c.id !== 'a2' && c.id !== 'b2') || hasM2(last)) && ((c.id !== 'a3' && c.id !== 'b3') || hasM3(last)) && (c.id !== 'i2' || isIM(last)) && (c.id !== 'w' || hasW(last)); });
+    var tot = lanes.reduce(function (s, c) { return s + c.w; }, 0), gap = 8;
+    var avail = (y1 - y0) - gap * (lanes.length - 1), y = y0;
+    laneGeom = [];
+
+    // вертикальная сетка
+    var span = view.t1 - view.t0, stp = niceStep(span), first = Math.ceil(view.t0 / stp) * stp;
+    ctx.strokeStyle = grid; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var t = first; t <= view.t1 + stp * 1e-6; t += stp) { var gx = Math.round(X(t * HZ)) + 0.5; ctx.moveTo(gx, y0); ctx.lineTo(gx, y1); }
+    ctx.stroke();
+    ctx.fillStyle = dim; ctx.textAlign = 'center';
+    var decs = Math.max(0, Math.ceil(-Math.log10(stp * 1e3) - 1e-9));
+    for (t = first; t <= view.t1 + stp * 1e-6; t += stp) ctx.fillText((t * 1e3).toFixed(decs), X(t * HZ), y1 + 15);
+    ctx.textAlign = 'left';
+
+    // сквозной ток и авария
+    for (var s = 0; s < L.shoot.length; s += 2) {
+      var sa = X(L.shoot[s]), sb = X(L.shoot[s + 1] + 1);
+      if (sb < x0 || sa > x1) continue;
+      ctx.fillStyle = 'rgba(240,80,80,0.22)';
+      ctx.fillRect(Math.max(x0, sa), y0, Math.max(1, Math.min(x1, sb) - Math.max(x0, sa)), y1 - y0);
+    }
+
+    lanes.forEach(function (c) {
+      var h = avail * c.w / tot, top = y, bot = y + h;
+      laneGeom.push({ id: c.id, top: top, bot: bot });
+      ctx.strokeStyle = grid2; ctx.strokeRect(x0 + 0.5, Math.round(top) + 0.5, pw, Math.round(h));
+      var col = css(c.color);
+      var Y, mn, mx;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(x0, top, pw, h); ctx.clip();
+      ctx.lineWidth = 1.4; ctx.strokeStyle = col;
+      if (c.id === 'ctr') {
+        var maxP = 1; for (var q = 1; q < L.prdEv.length; q += 2) maxP = Math.max(maxP, L.prdEv[q]);
+        for (q = 1; q < L.cmpEv.length; q += 2) maxP = Math.max(maxP, L.cmpEv[q]);
+        mn = 0; mx = maxP * 1.08;
+        Y = function (v) { return bot - 4 - (v - mn) / (mx - mn) * (h - 8); };
+        ctx.strokeStyle = col; ctx.lineWidth = 1.4;
+        if (tB - tA > 40 * (L.zeroT.length > 2 ? L.zeroT[1] - L.zeroT[0] : 1e9)) ctx.globalAlpha = 0.35;
+        drawLine(L.ctrV, X, Y, x0, pw, tA, tB);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = css('--ch-cmp'); ctx.lineWidth = 1.6;
+        drawStep(L.cmpEv, endTick, X, Y, x0, pw, tA, tB);
+        // моменты вызова обработчика
+        ctx.strokeStyle = css('--ch-isr'); ctx.lineWidth = 1;
+        isrMarks(L.isrT, X, tA, tB, bot);
+        laneLabel(c.name, col, top, ['TBCTR', 'CMPA', 'прерывание'], [col, css('--ch-cmp'), css('--ch-isr')]);
+        axisLabels(top, bot, mx / 1.08, 0, Y, function (v) { return v.toFixed(0); });
+      } else if (c.id === 'a' || c.id === 'b') {
+        Y = function (v) { var vv = v === 2 ? 0.5 : v; return bot - 6 - vv * (h - 12); };
+        drawStep(c.id === 'a' ? L.edA : L.edB, endTick, X, Y, x0, pw, tA, tB);
+        laneLabel(c.id === 'a' ? 'EPWM1A, верхний ключ' + (hasM2(last) ? ' стойки A' : '') : 'EPWM1B, нижний ключ' + (hasM2(last) ? ' стойки A' : ''), col, top);
+        ctx.restore(); ctx.save();
+        ctx.fillStyle = dim; ctx.textAlign = 'right';
+        ctx.fillText('1', x0 - 6, top + 10); ctx.fillText('0', x0 - 6, bot - 2);
+      } else if (c.id === 'a2' || c.id === 'b2' || c.id === 'a3' || c.id === 'b3') {
+        Y = function (v) { var vv = v === 2 ? 0.5 : v; return bot - 6 - vv * (h - 12); };
+        var mi = c.id.slice(-1) === '2' ? 1 : 2, isA = c.id[0] === 'a';
+        drawStep(isA ? L.ed[mi].A : L.ed[mi].B, endTick, X, Y, x0, pw, tA, tB);
+        laneLabel('EPWM' + (mi + 1) + (isA ? 'A, верхний' : 'B, нижний') + ' ключ стойки ' + (mi === 1 ? 'B' : 'C'), col, top);
+        ctx.restore(); ctx.save();
+        ctx.fillStyle = dim; ctx.textAlign = 'right';
+        ctx.fillText('1', x0 - 6, top + 10); ctx.fillText('0', x0 - 6, bot - 2);
+      } else if (c.id === 'w') {
+        var rw = rangeSamples(L.wS, L.iN, L.dec, 0, endTick), k30 = 30 / Math.PI;
+        var rw2 = niceRange(Math.min(0, rw[0] * k30), Math.max(rw[1] * k30, 10), false); mn = rw2[0]; mx = rw2[1];
+        Y = function (v) { return bot - (v * k30 - mn) / (mx - mn) * h; };
+        drawSamples(L.wS, L.iN, L.dec, X, Y, x0, pw, tA, tB);
+        laneLabel('частота вращения, об/мин', col, top);
+        axisLabels(top, bot, mx, mn, function (v) { return bot - (v - mn) / (mx - mn) * h; }, function (v) { return v.toFixed(0); });
+      } else if (c.id === 'v') {
+        var vd = last.P.Vdc, hb = isHB(last) || isIM(last);
+        if (isIM(last)) vd = last.P.Vdc * 2 / 3;
+        Y = hb ? function (v) { return bot - 5 - (v + vd) / (2 * vd) * (h - 10); } : function (v) { return bot - 5 - v / vd * (h - 10); };
+        if (hb) { ctx.strokeStyle = grid2; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(x0, Y(0)); ctx.lineTo(x1, Y(0)); ctx.stroke(); ctx.setLineDash([]); ctx.strokeStyle = col; }
+        drawStep(L.vEd, endTick, X, Y, x0, pw, tA, tB);
+        laneLabel(isIM(last) ? 'u фазы A относительно нейтрали, В' : hb ? 'u якоря, В' : 'u стойки, В', col, top);
+        axisLabels(top, bot, vd, hb ? -vd : 0, Y, function (v) { return v.toFixed(0); });
+      } else if (c.id === 'i') {
+        var r = rangeSamples(L.iS, L.iN, L.dec, tA, tB);
+        var rr = niceRange(r[0], r[1], true); mn = rr[0]; mx = rr[1];
+        Y = function (v) { return bot - (v - mn) / (mx - mn) * h; };
+        ctx.strokeStyle = grid2; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(x0, Y(0)); ctx.lineTo(x1, Y(0)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+        drawSamples(L.iS, L.iN, L.dec, X, Y, x0, pw, tA, tB);
+        laneLabel(isIM(last) ? 'i фазы A, А' : isHB(last) ? 'i якоря, А' : 'i нагрузки, А', col, top);
+      } else if (c.id === 'i2') {
+        var r2i = rangeSamples(L.iS2, L.iN, L.dec, tA, tB), rr3 = niceRange(r2i[0], r2i[1], true); mn = rr3[0]; mx = rr3[1];
+        Y = function (v) { return bot - (v - mn) / (mx - mn) * h; };
+        ctx.lineWidth = 1.4; drawSamples(L.iS2, L.iN, L.dec, X, Y, x0, pw, tA, tB);
+        laneLabel('i фазы B, А', col, top);
+        axisLabels(top, bot, mx / 1.1, mn / 1.1, Y, fmtV);
+        axisLabels(top, bot, mx / 1.1, mn / 1.1, Y, fmtV);
+      } else if (c.id === 'cs') {
+        var rc = rangeSamples(L.csS, L.csN, L.dec, tA, tB), rr2 = niceRange(Math.min(rc[0], 1.6), Math.max(rc[1], 1.7), false); mn = rr2[0]; mx = rr2[1];
+        Y = function (v) { return bot - (v - mn) / (mx - mn) * h; };
+        ctx.lineWidth = 1.2;
+        drawSamples(L.csS, L.csN, L.dec, X, Y, x0, pw, tA, tB);
+        // моменты выборки АЦП
+        var as = L.adcS, lastPx = -10; ctx.fillStyle = css('--ch-ctr');
+        for (var q = 0; q + 6 < as.length; q += 7) {
+          if (as[q + 1] < tA || as[q] > tB) continue;
+          var xa = X(as[q]), xb = X(as[q + 1]);
+          if (xb - lastPx < 2) continue;
+          ctx.globalAlpha = 0.35; ctx.fillRect(xa, top + 2, Math.max(1.5, xb - xa), h - 4); ctx.globalAlpha = 1;
+          ctx.beginPath(); ctx.arc(xb, Y(as[q + 6] * 3.3 / 4096), 2.2, 0, 6.3); ctx.fill();
+          lastPx = xb;
+        }
+        laneLabel('выход датчика тока, В; точки - результат АЦП', col, top);
+        axisLabels(top, bot, mx, mn, Y, fmtV);
+      } else if (c.id === 'flt') {
+        Y = function (v) { return bot - 5 - v * (h - 10); };
+        drawStep(L.pinEd, endTick, X, Y, x0, pw, tA, tB);
+        laneLabel('вход TZ1 (nFAULT)', col, top);
+      } else if (c.id === 'var') {
+        var vr = rangeStep(L.varT, 0, endTick);
+        var r2 = niceRange(vr[0], vr[1], false); mn = r2[0]; mx = r2[1];
+        Y = function (v) { return bot - (v - mn) / (mx - mn) * h; };
+        drawStep(L.varT, endTick, X, Y, x0, pw, tA, tB);
+        laneLabel(traceVar + ', значение в обработчике', col, top);
+        axisLabels(top, bot, vr[1], vr[0], Y, fmtV);
+      }
+      ctx.restore();
+      y += h + gap;
+    });
+
+    var tzl = tzInfo(last);
+    if (tzl.trip !== null) {
+      var tx = X(tzl.trip);
+      if (tx >= x0 && tx <= x1) {
+        ctx.strokeStyle = css('--ch-trip'); ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(tx + 0.5, y0); ctx.lineTo(tx + 0.5, y1); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = css('--ch-trip'); ctx.fillText('авария', Math.min(tx + 5, x1 - 46), y1 - 6);
+      }
+    }
+    if (hoverX !== null && hoverX >= x0 && hoverX <= x1) {
+      ctx.strokeStyle = fg; ctx.globalAlpha = 0.6; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(Math.round(hoverX) + 0.5, y0); ctx.lineTo(Math.round(hoverX) + 0.5, y1); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = fg; ctx.textAlign = 'left';
+    ctx.fillText('время, мс    ' + fmtT(stp) + '/дел    окно ' + fmtT(view.t1 - view.t0), x0, H - 8);
+
+    function laneLabel(text, col, top, legend, lcols) {
+      ctx.font = '600 11px "IBM Plex Sans Condensed", sans-serif';
+      ctx.fillStyle = css('--scope-bg'); ctx.globalAlpha = 0.85;
+      ctx.fillRect(x0 + 2, top + 2, ctx.measureText(text).width + 8, 15); ctx.globalAlpha = 1;
+      ctx.fillStyle = col; ctx.fillText(text, x0 + 6, top + 13);
+      if (legend) {
+        var lx = x0 + 6 + ctx.measureText(text).width + 14;
+        legend.forEach(function (lg, ix) {
+          if (ix === 0) return;
+          ctx.fillStyle = lcols[ix]; ctx.fillRect(lx, top + 6, 10, 2);
+          ctx.fillStyle = dim; ctx.fillText(lg, lx + 14, top + 13); lx += 14 + ctx.measureText(lg).width + 12;
+        });
+      }
+      ctx.font = '11px "IBM Plex Mono", monospace';
+    }
+    function axisLabels(top, bot, vmax, vmin, Y, f) {
+      ctx.fillStyle = dim; ctx.textAlign = 'right';
+      ctx.fillText(f(vmax), x0 - 6, Math.max(top + 10, Y(vmax) + 4));
+      ctx.fillText(f(vmin), x0 - 6, Math.min(bot - 2, Y(vmin) + 4));
+      ctx.textAlign = 'left';
+    }
+    function isrMarks(arr, X, tA, tB, bot) {
+      var lo = 0, hi = arr.length - 1, s0 = arr.length;
+      while (lo <= hi) { var mid = (lo + hi) >> 1; if (arr[mid] >= tA) { s0 = mid; hi = mid - 1; } else lo = mid + 1; }
+      ctx.beginPath();
+      var lastPx = -10;
+      for (var j = s0; j < arr.length && arr[j] <= tB; j++) {
+        var px = Math.round(X(arr[j])) + 0.5;
+        if (px - lastPx < 1) continue;
+        ctx.moveTo(px, bot); ctx.lineTo(px, bot - 6); lastPx = px;
+      }
+      ctx.stroke();
+    }
+  }
+
+  function valueAt(arr, tick) { var k = bsearch(arr, tick); return k < 0 ? null : arr[k + 1]; }
+  function ctrAt(arr, tick) {
+    var k = bsearch(arr, tick); if (k < 0 || k + 2 >= arr.length) return k < 0 ? null : arr[k + 1];
+    var t0 = arr[k], t1 = arr[k + 2]; if (t1 === t0) return arr[k + 3];
+    return Math.round(arr[k + 1] + (arr[k + 3] - arr[k + 1]) * (tick - t0) / (t1 - t0));
+  }
+  function updateReadout() {
+    var ro = $('#readout');
+    if (!last || hoverX === null) return;
+    var W = cv.clientWidth, x0 = 62, pw = Math.max(10, W - 14 - x0);
+    var t = view.t0 + (hoverX - x0) / pw * (view.t1 - view.t0);
+    if (t < view.t0 || t > view.t1) return;
+    var L = last.logs, tick = t * last.tickHz;
+    var dig = function (v) { return v === null ? '–' : v === 2 ? 'Z' : String(v); };
+    var ii = Math.min(L.iN - 1, Math.max(0, Math.round(tick / L.dec) - 1));
+    var parts = [
+      ['t', fmtT(t)], ['TBCTR', String(ctrAt(L.ctrV, tick))], ['CMPA', String(valueAt(L.cmpEv, tick))],
+      ['A', dig(valueAt(L.edA, tick))], ['B', dig(valueAt(L.edB, tick))],
+      ['u', (valueAt(L.vEd, tick) === null ? '–' : fmtV(valueAt(L.vEd, tick))) + ' В'],
+      ['i', (L.iN ? fmtV(L.iS[ii]) : '–') + ' А']
+    ];
+    if (hasM2(last)) parts.splice(5, 0, ['A2', dig(valueAt(L.ed[1].A, tick))], ['B2', dig(valueAt(L.ed[1].B, tick))]);
+    if (hasM3(last)) parts.splice(7, 0, ['A3', dig(valueAt(L.ed[2].A, tick))], ['B3', dig(valueAt(L.ed[2].B, tick))]);
+    if (isIM(last) && L.iS2) parts.push(['iB', fmtV(L.iS2[ii]) + ' А']);
+    if (hasW(last)) parts.push(['n', (L.wS[ii] * 30 / Math.PI).toFixed(0) + ' об/мин']);
+    if (traceVar && L.varT.length) { var vv = valueAt(L.varT, tick); parts.push([traceVar, vv === null ? '–' : fmtV(vv)]); }
+    ro.innerHTML = parts.map(function (p) { return '<span>' + esc(p[0]) + ' <b>' + esc(p[1]) + '</b></span>'; }).join('');
+  }
+
+  function clampView() {
+    if (!last) return;
+    var T = last.endTick / last.tickHz, minSpan = 50e-9;
+    var span = Math.max(minSpan, Math.min(T, view.t1 - view.t0));
+    if (view.t0 < 0) view.t0 = 0;
+    view.t1 = view.t0 + span;
+    if (view.t1 > T) { view.t1 = T; view.t0 = Math.max(0, T - span); }
+  }
+  function setView(kind) {
+    if (!last) return;
+    var L = last.logs, HZ = last.tickHz, T = last.endTick / HZ;
+    var z = L.zeroT, prd = z.length > 2 ? (z[z.length - 1] - z[z.length - 2]) / HZ : 1e-4;
+    var tzv2 = tzInfo(last), tEn = (tzv2.en || 0) / HZ, tTr = tzv2.trip !== null ? tzv2.trip / HZ : null;
+    var mid = tEn + ((tTr !== null ? tTr : T) - tEn) * 0.5;
+    if (kind === 'all') { view.t0 = 0; view.t1 = T; }
+    else if (kind === 'two') {
+      var target = mid, zt = null;
+      for (var k = 0; k < z.length; k++) if (z[k] / HZ >= target) { zt = z[k] / HZ; break; }
+      if (zt === null) zt = target;
+      view.t0 = zt - prd * 0.1; view.t1 = zt + prd * 2.1;
+    } else if (kind === 'dead') {
+      var ed = L.edA, after = mid, tf = null;
+      for (var j = 2; j < ed.length; j += 2) if (ed[j + 1] === 0 && ed[j - 1] === 1 && ed[j] / HZ >= after) { tf = ed[j] / HZ; break; }
+      if (tf === null) for (j = 2; j < ed.length; j += 2) if (ed[j + 1] === 0 && ed[j - 1] === 1) { tf = ed[j] / HZ; break; }
+      if (tf === null) { view.t0 = 0; view.t1 = Math.min(T, 5e-6); }
+      else {
+        var dt = last.measures.dtAB ? last.measures.dtAB.max : 1e-6;
+        var w = Math.max(4e-6, dt * 4);
+        view.t0 = tf - w * 0.3; view.t1 = tf + w * 0.7;
+      }
+    } else if (kind === 'trip') {
+      if (tTr === null) return;
+      var tt = tTr;
+      view.t0 = tt - 1e-3; view.t1 = tt + 3e-3;
+    }
+    clampView(); draw();
+    var tb = document.querySelector('[data-view="trip"]'); tb.disabled = tTr === null;
+  }
+  window.C2KScope = {
+    win: function (t0, t1) { if (!last) return; view.t0 = t0; view.t1 = t1; clampView(); draw(); },
+    ch: function (on) { CH.forEach(function (c) { c.on = on.indexOf(c.id) >= 0; }); renderChips(); draw(); },
+    all: function () { CH.forEach(function (c) { c.on = true; }); renderChips(); setView('all'); },
+    view: setView
+  };
+  $('#views').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b || !last) return;
+    if (b.dataset.view) setView(b.dataset.view);
+    if (b.dataset.zoom) {
+      var c = (view.t0 + view.t1) / 2, sp = (view.t1 - view.t0) * (b.dataset.zoom === 'in' ? 0.5 : 2);
+      view.t0 = c - sp / 2; view.t1 = c + sp / 2; clampView(); draw();
+    }
+  });
+  var drag = null;
+  cv.addEventListener('wheel', function (e) {
+    if (!last) return;
+    e.preventDefault();
+    var rect = cv.getBoundingClientRect(), x0 = 62, pw = Math.max(10, rect.width - 14 - x0);
+    var fx = Math.min(1, Math.max(0, (e.clientX - rect.left - x0) / pw));
+    var tc = view.t0 + fx * (view.t1 - view.t0);
+    var k = e.deltaY > 0 ? 1.25 : 0.8, sp = (view.t1 - view.t0) * k;
+    view.t0 = tc - fx * sp; view.t1 = view.t0 + sp; clampView(); draw(); updateReadout();
+  }, { passive: false });
+  cv.addEventListener('pointerdown', function (e) { if (!last) return; drag = { x: e.clientX, t0: view.t0, t1: view.t1 }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', function (e) {
+    var rect = cv.getBoundingClientRect();
+    hoverX = e.clientX - rect.left;
+    if (drag) {
+      var pw = Math.max(10, rect.width - 14 - 62), dt = (e.clientX - drag.x) / pw * (drag.t1 - drag.t0);
+      view.t0 = drag.t0 - dt; view.t1 = drag.t1 - dt; clampView();
+    }
+    draw(); updateReadout();
+  });
+  cv.addEventListener('pointerup', function () { drag = null; });
+  cv.addEventListener('pointerleave', function () { if (!drag) { hoverX = null; draw(); } });
+  cv.addEventListener('dblclick', function () { setView('all'); });
+  window.addEventListener('resize', function () { draw(); });
+  try { new ResizeObserver(function () { draw(); }).observe(cv); } catch (e) {}
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { draw(); }); } catch (e) {}
+  try { new MutationObserver(function () { draw(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] }); } catch (e) {}
+
+  /* ---------------- вкладки ---------------- */
+  $('#tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (!b) return;
+    document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t === b)); });
+    document.querySelectorAll('.tabpanel').forEach(function (p) { p.hidden = p.id !== 'tp-' + b.dataset.tab; });
+  });
+
+  function card(k, v, n, cls) {
+    return '<div class="mcard ' + (cls || '') + '"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div>' + (n ? '<div class="n">' + esc(n) + '</div>' : '') + '</div>';
+  }
+  function qepCard(f) {
+    var q = f.qep, R = f.snapEnd && f.snapEnd.EQep1Regs, xcr = R ? (R.QDECCTL >> 11) & 1 : 0;
+    var need = xcr ? Math.round(q.edges / 2) : q.edges, ok = Math.abs(q.counted - need) <= 1;
+    return card('Импульсы энкодера', q.counted + ' из ' + q.edges + (xcr ? ' (XCR = 1)' : ''),
+      ok ? (xcr ? 'счет только по фронтам QEPA: принята половина фронтов, как и должно быть; ' : 'все импульсы приняты счетчиком eQEP1; ') + 'QPOSCNT = ' + (R ? R.QPOSCNT : '?')
+         : 'часть импульсов не принята: проверьте GPAMUX2, QDECCTL и QPEN', ok ? 'ok' : 'warn');
+  }
+  function renderMeas() {
+    var f = last, m = f.measures, h = '', tzi = tzInfo(f);
+    h += card('Частота ШИМ', m.fpwm ? (m.fpwm / 1e3).toFixed(3) + ' кГц' : 'нет', m.fpwm ? 'по моментам TBCTR = 0' : 'счетчик не работал', m.fpwm ? 'ok' : 'crit');
+    h += card('Рабочий период TBPRD', String(m.prdA), 'значение, действующее в счетчике', m.prdA ? 'ok' : 'warn');
+    var dtTxt = function (d) { return d ? (d.min * 1e6).toFixed(3) + (Math.abs(d.max - d.min) > 1e-9 ? '…' + (d.max * 1e6).toFixed(3) : '') + ' мкс' : 'нет'; };
+    h += card('Мертвое время A→B', dtTxt(m.dtAB), 'спад EPWM1A → фронт EPWM1B', m.dtAB ? 'ok' : 'warn');
+    h += card('Мертвое время B→A', dtTxt(m.dtBA), 'спад EPWM1B → фронт EPWM1A', m.dtBA ? 'ok' : 'warn');
+    if (hasM3(f)) {
+      h += card('Мертвое время стойки C, A→B', dtTxt(m.dt3AB), 'спад EPWM3A → фронт EPWM3B', m.dt3AB ? 'ok' : 'warn');
+      h += card('Мертвое время стойки C, B→A', dtTxt(m.dt3BA), 'спад EPWM3B → фронт EPWM3A', m.dt3BA ? 'ok' : 'warn');
+    }
+    if (hasM2(f)) {
+      h += card('Мертвое время стойки B, A→B', dtTxt(m.dt2AB), 'спад EPWM2A → фронт EPWM2B', m.dt2AB ? 'ok' : 'warn');
+      h += card('Мертвое время стойки B, B→A', dtTxt(m.dt2BA), 'спад EPWM2B → фронт EPWM2A', m.dt2BA ? 'ok' : 'warn');
+    }
+    h += card('Сквозной ток', m.shootN ? m.shootN + ' раз, ' + (m.shootTime * 1e6).toFixed(1) + ' мкс' : 'нет', m.shootN ? 'оба ключа стойки были открыты одновременно' : 'ключи не открывались одновременно', m.shootN ? 'crit' : 'ok');
+    h += card('Вызовы обработчика', String(f.isrCount), m.fisr ? 'частота ' + (m.fisr / 1e3).toFixed(3) + ' кГц' : 'обработчик не работает периодически', f.isrCount > 1 ? 'ok' : 'crit');
+    h += card(isHB(f) ? 'Ток якоря, максимум' : 'Ток нагрузки, максимум', fmtV(m.imax) + ' А', 'по модулю за все время', m.imax > 0.01 ? 'ok' : 'warn');
+    if (isIM(f)) {
+      var Li = f.logs, fo2 = f.varsEnd && typeof f.varsEnd.f_out === 'number' ? f.varsEnd.f_out : 0, tEnd2 = tzi.trip !== null ? tzi.trip : f.endTick;
+      if (fo2 > 1 && window.C2KLAB) {
+        var per2 = f.tickHz / fo2;
+        if (tEnd2 - 2 * per2 > (tzi.en || 0)) { var u1i = C2KLAB.fundamental(Li.vEd, f.endTick, tEnd2 - 2 * per2, tEnd2, fo2, 0); h += card('Первая гармоника фазного напряжения', fmtV(u1i) + ' В', 'амплитуда при f_out = ' + fo2.toFixed(2) + ' Гц, два последних периода', 'ok'); }
+      }
+      h += card('Частота вращения', (Li.wS[Li.iN - 1] * 30 / Math.PI).toFixed(0) + ' об/мин', 'в конце моделирования', 'ok');
+      if (!isPM(f)) h += card('Поток статора', Li.psiS[Li.iN - 1].toFixed(3) + ' Вб', 'амплитуда в конце моделирования', 'ok');
+      else {
+        var kL = Li.iN - 1, nAv = 0, tAv = 0, dAv = 0, qAv = 0, k0p = Math.max(0, kL - Math.round(f.tickHz * 1e-3 / Li.dec));
+        for (var kp = k0p; kp <= kL; kp++) { tAv += Li.teS[kp]; dAv += Li.idS[kp]; qAv += Li.iqS[kp]; nAv++; }
+        h += card('Электромагнитный момент', (tAv / nAv).toFixed(3) + ' Н·м', 'среднее за последнюю 1 мс', 'ok');
+        h += card('Токи в осях ротора', 'i_d = ' + fmtV(dAv / nAv) + ' А, i_q = ' + fmtV(qAv / nAv) + ' А', 'истинные, среднее за последнюю 1 мс', 'ok');
+        h += card('Электрический угол ротора', (Li.thS[kL] * 180 / Math.PI).toFixed(1) + '°', 'истинный, в конце моделирования', 'ok');
+        if (f.qep) h += qepCard(f);
+      }
+    }
+    if (isHB(f)) {
+      var Lh = f.logs, tw0 = Math.max(0, f.endTick - f.tickHz * 1e-3), si = 0, ni = 0, su = 0;
+      for (var kq = Math.ceil(tw0 / Lh.dec); kq < Lh.iN; kq++) { si += Lh.iS[kq]; ni++; }
+      var ve = Lh.vEd;
+      for (var kv = 0; kv < ve.length; kv += 2) { var ta = Math.max(ve[kv], tw0), tb = Math.min(kv + 2 < ve.length ? ve[kv + 2] : f.endTick, f.endTick); if (tb > ta) su += ve[kv + 1] * (tb - ta); }
+      h += card('Среднее напряжение на якоре', fmtV(su / Math.max(1, f.endTick - tw0)) + ' В', 'за последнюю 1 мс', 'ok');
+      h += card('Средний ток якоря', ni ? fmtV(si / ni) + ' А' : 'нет', 'за последнюю 1 мс', 'ok');
+      if (f.qep) h += qepCard(f);
+      if (hasW(f)) h += card('Частота вращения', (Lh.wS[Lh.iN - 1] * 30 / Math.PI).toFixed(0) + ' об/мин', 'в конце моделирования, ЭДС ' + fmtV(f.P.motor.ke * Lh.wS[Lh.iN - 1]) + ' В', 'ok');
+    }
+    if (tzi.en) h += card('Включение выходов', 't = ' + fmtMs(tzi.en / f.tickHz * 1e3), 'выходы отключены при пуске и включены записью TZCLR.OST', 'ok');
+    h += card('Аварийное отключение', tzi.trip !== null ? 't = ' + fmtMs(tzi.trip / f.tickHz * 1e3) : 'не было', tzi.trip !== null ? 'флаг TZFLG.OST установлен' : '', tzi.trip !== null ? 'warn' : 'ok');
+    var fo = f.varsEnd && typeof f.varsEnd.f_out === 'number' ? f.varsEnd.f_out : null;
+    if (fo && fo > 0 && window.C2KLAB && !isIM(f)) {
+      var per = f.tickHz / fo, tEnd = tzi.trip !== null ? tzi.trip : f.endTick;
+      if (tzi.en !== null && tEnd - tzi.en >= 2 * per) {
+        var u1 = C2KLAB.fundamental(f.logs.vEd, f.endTick, tEnd - 2 * per, tEnd, fo, f.P.Vdc / 2);
+        var Lg = f.logs, w = 2 * Math.PI * fo / f.tickHz, re = 0, im = 0, k0 = Math.ceil((tEnd - 2 * per) / Lg.dec), k1 = Math.min(Lg.iN - 1, Math.floor(tEnd / Lg.dec) - 1);
+        for (var k = k0; k <= k1; k++) { var tk = (k + 1) * Lg.dec; re += Lg.iS[k] * Math.cos(w * tk); im -= Lg.iS[k] * Math.sin(w * tk); }
+        var i1 = 2 * Math.hypot(re, im) / (k1 - k0 + 1);
+        h += card('Основная гармоника напряжения', fmtV(u1) + ' В', 'амплитуда на частоте f_out = ' + fo + ' Гц, ' + (tzi.trip !== null ? 'два периода до аварии' : 'два последних периода'), 'ok');
+        h += card('Основная гармоника тока', fmtV(i1) + ' А', 'амплитуда на той же частоте', 'ok');
+      } else h += card('Основная гармоника', 'нет', tzi.en === null ? 'выходы не включались' : 'интервал работы меньше двух периодов f_out', 'warn');
+    }
+    if (f.logs.adcS && f.logs.adcS.length >= 7) {
+      var as = f.logs.adcS, n = Math.floor(as.length / 7), q0 = (n - 1) * 7;
+      var tq = as[q0], dz = Infinity, dp = Infinity;
+      f.logs.zeroT.forEach(function (t) { if (Math.abs(tq - t) < Math.abs(dz)) dz = tq - t; });
+      f.logs.prdT.forEach(function (t) { if (Math.abs(tq - t) < Math.abs(dp)) dp = tq - t; });
+      var where = Math.abs(dp) <= Math.abs(dz) ? 'TBCTR = TBPRD' + (dp ? (dp > 0 ? ' + ' : ' - ') + Math.abs(dp) * 10 + ' нс' : '') : 'TBCTR = 0' + (dz ? (dz > 0 ? ' + ' : ' - ') + Math.abs(dz) * 10 + ' нс' : '');
+      h += card('Преобразования АЦП', String(n), 'вход ADCINA' + as[q0 + 3] + ', окно ' + as[q0 + 4] + ' нс, запуск при ' + where, 'ok');
+    }
+    if (f.ignored) h += card('Невыполненные записи', String(f.ignored), 'запись в защищенный регистр или в модуль без такта', 'crit');
+    $('#tp-meas').innerHTML = '<div class="meas">' + h + '</div><p class="note">Значения посчитаны по записи сигналов, как если бы их измеряли осциллографом на выводах ' + (hasM3(f) ? 'GPIO0…GPIO5' : hasM2(f) ? 'GPIO0…GPIO3' : 'GPIO0, GPIO1') + ' и датчиками тока.</p>';
+  }
+
+  var regMode = 'end', regOnlyChanged = false;
+  function hex(v, w) { var s = (v >>> 0).toString(16).toUpperCase(); s = ('00000000' + s).slice(-(w / 4)); return '0x' + (w === 32 ? s.slice(0, 4) + ' ' + s.slice(4) : s); }
+  function renderRegs() {
+    if (!last) return;
+    var snap = regMode === 'main' ? last.snapMain : last.snapEnd;
+    var h = '<div class="regs-tools"><div class="grp" role="group" aria-label="Момент">' +
+      '<button class="seg" data-rm="main" type="button" aria-pressed="' + (regMode === 'main') + '"' + (regMode === 'main' ? ' style="border-color:var(--accent);color:var(--accent)"' : '') + '>После main()</button> ' +
+      '<button class="seg" data-rm="end" type="button" aria-pressed="' + (regMode === 'end') + '"' + (regMode === 'end' ? ' style="border-color:var(--accent);color:var(--accent)"' : '') + '>В конце моделирования</button></div>' +
+      '<label><input type="checkbox" id="onlyCh"' + (regOnlyChanged ? ' checked' : '') + '> только отличающиеся от значений после сброса</label></div>';
+    if (!snap) { $('#tp-regs').innerHTML = h + '<p class="note">main() не выполнилась до конца, снимка нет.</p>'; bindRegs(); return; }
+    var core = snap.__core;
+    h += '<div class="rgroup"><h3>Ядро C28x<span>прерывания</span></h3><div class="fl">' +
+      '<span class="fc' + (core.IER ? ' ch' : '') + '">IER = ' + hex(core.IER, 16) + '</span>' +
+      '<span class="fc' + (core.IFR ? ' ch' : '') + '">IFR = ' + hex(core.IFR, 16) + '</span>' +
+      '<span class="fc' + (!core.INTM ? ' ch' : '') + '">INTM = ' + core.INTM + ' <em>' + (core.INTM ? 'запрещены' : 'разрешены') + '</em></span>' +
+      '<span class="fc">EALLOW = ' + core.EALLOW + '</span>' +
+      Object.keys(snap.__vect).map(function (k) { return '<span class="fc">PieVectTable.' + k + ' = ' + esc(snap.__vect[k]) + '</span>'; }).join('') +
+      '<span class="fc">рабочий TBPRD = ' + snap.__active.TBPRD + '</span>' +
+      '<span class="fc">рабочий CMPA = ' + snap.__active.CMPA + '</span>' +
+      '</div></div>';
+    Object.keys(C2K.SCHEMA).forEach(function (g) {
+      var G = C2K.SCHEMA[g], rows = '';
+      Object.keys(G.regs).forEach(function (r) {
+        var d = G.regs[r], v = snap[g][r], changed = (v >>> 0) !== (d.reset >>> 0);
+        if (regOnlyChanged && !changed) return;
+        var fields = '';
+        if (d.f) {
+          d.f.forEach(function (fd) {
+            var fv = Math.floor((v >>> 0) / Math.pow(2, fd.lsb)) % Math.pow(2, fd.width);
+            var fr = Math.floor((d.reset >>> 0) / Math.pow(2, fd.lsb)) % Math.pow(2, fd.width);
+            if (g === 'GpioCtrlRegs' && fd.name !== 'GPIO0' && fd.name !== 'GPIO1' && fv === fr) return;
+            if (/^(EPWM([2-9]|1[0-2])|ACK([0-24-9]|1[0-2])|INTx([2-9]|1[0-6]))$/.test(fd.name) && fv === fr) return;
+            var en = fd.en && C2K.ENUMS[fd.en] ? C2K.ENUMS[fd.en][fv] : null;
+            fields += '<span class="fc' + (fv !== fr ? ' ch' : '') + '">' + fd.name + ' = ' + fv + (en ? ' <em>' + esc(en) + '</em>' : '') + '</span>';
+          });
+        }
+        rows += '<tr><td class="rn">' + r + '</td><td class="rv' + (changed ? ' ch' : '') + '">' + (d.plain ? String(v) : hex(v, d.w)) + '</td><td><div class="doc">' + esc(d.doc || '') + (d.prot || G.prot ? ', защищен EALLOW' : '') + (d.wo ? ', только запись' : '') + (d.ro ? ', только чтение' : '') + '</div>' + (fields ? '<div class="fl">' + fields + '</div>' : '') + '</td></tr>';
+      });
+      if (rows) h += '<div class="rgroup"><h3>' + g + '<span>' + esc(G.title) + '</span></h3><div class="tbl-wrap"><table class="rtable">' + rows + '</table></div></div>';
+    });
+    $('#tp-regs').innerHTML = h;
+    bindRegs();
+  }
+  function bindRegs() {
+    document.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { regMode = b.dataset.rm; renderRegs(); }; });
+    var oc = $('#onlyCh'); if (oc) oc.onchange = function () { regOnlyChanged = oc.checked; renderRegs(); };
+  }
+
+  function renderVars() {
+    if (!last) return;
+    var names = Object.keys(last.varsEnd || {});
+    if (!names.length) { $('#tp-vars').innerHTML = '<p class="note">Глобальных переменных нет.</p>'; return; }
+    var fmt = function (v) { return typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toPrecision(6)) : String(v); };
+    var h = '<div class="tbl-wrap"><table class="vtable"><tr><th>Переменная</th><th>После main()</th><th>В конце</th><th>На осциллограф</th></tr>';
+    names.forEach(function (n) {
+      h += '<tr><td>' + esc(n) + '</td><td>' + esc(fmt(last.varsMain[n])) + '</td><td>' + esc(fmt(last.varsEnd[n])) + '</td>' +
+        '<td><input type="radio" name="tv" value="' + esc(n) + '" aria-label="Показать ' + esc(n) + ' на осциллографе"' + (traceVar === n ? ' checked' : '') + '></td></tr>';
+    });
+    h += '<tr><td colspan="3" style="font-family:var(--f-ui);color:var(--muted)">не выводить</td><td><input type="radio" name="tv" value=""' + (!traceVar ? ' checked' : '') + ' aria-label="Не выводить переменную"></td></tr>';
+    h += '</table></div><p class="note">Это аналог окна Expressions в Code Composer Studio. Выбранная переменная записывается после каждого вызова обработчика прерывания и выводится на отдельный луч. Выбор перезапускает моделирование.</p>';
+    $('#tp-vars').innerHTML = h;
+    document.querySelectorAll('input[name="tv"]').forEach(function (r) {
+      r.onchange = function () { traceVar = r.value || ''; renderChips(); runSim(); };
+    });
+  }
+
+  /* ---------------- опыты ---------------- */
+  function rep(a, b) { return function (c) { var n = typeof a === 'string' ? c.split(a).join(b) : c.replace(a, b); return n === c ? null : n; }; }
+  var EXPS = [
+    { t: 'Делитель после сброса', ch: 'Удалите строку <code>TBCTL.bit.HSPCLKDIV = TB_DIV1</code>.', ex: 'ШИМ и прерывание 5 кГц, мертвое время 2 мкс, частота тока 25 Гц.', why: 'После сброса HSPCLKDIV = /2. Значения регистров после сброса задает TRM, на них нельзя полагаться молча.', f: rep(/^[ \t]*EPwm1Regs\.TBCTL\.bit\.HSPCLKDIV.*\n/m, '') },
+    { t: 'Полярность мертвого времени', ch: '<code>POLSEL = DB_ACTV_HI</code> вместо <code>DB_ACTV_HIC</code>.', ex: 'Сквозной ток: красные полосы на осциллографе, ток не нарастает.', why: 'Нижний ключ должен получать инверсию сигнала верхнего, иначе стойка закорачивает звено постоянного тока.', f: rep('DB_ACTV_HIC;', 'DB_ACTV_HI;') },
+    { t: 'Мертвое время 5 мкс', ch: '<code>#define DEADBAND_TCK 500</code>.', ex: 'Амплитуда тока меньше, около нуля тока появляется ступенька.', why: 'Пока оба ключа закрыты, напряжение стойки задает диод, проводящий ток. Это искажает выходное напряжение.', f: rep(/#define DEADBAND_TCK\s+100/, '#define DEADBAND_TCK  500') },
+    { t: 'Флаг прерывания ePWM', ch: 'Удалите <code>EPwm1Regs.ETCLR.bit.INT = 1</code>.', ex: 'Обработчик вызван один раз, далее заполнение не меняется.', why: 'Пока ETFLG.INT установлен, модуль не формирует новых запросов.', f: rep(/^[ \t]*EPwm1Regs\.ETCLR\.bit\.INT = 1;.*\n/m, '') },
+    { t: 'Подтверждение PIE', ch: 'Удалите <code>PieCtrlRegs.PIEACK.all = PIEACK_GROUP3</code>.', ex: 'Тоже один вызов, но по другой причине: заблокирована группа 3 PIE.', why: 'PIE не пропускает к ядру прерывания группы, пока она не подтверждена.', f: rep(/^[ \t]*PieCtrlRegs\.PIEACK\.all.*\n/m, '') },
+    { t: 'Защита EALLOW', ch: 'Удалите <code>EALLOW;</code> в начале <code>InitEPwm1Gpio()</code>.', ex: 'Счетчик и прерывание работают, но на выводах импульсов нет, ток равен нулю.', why: 'Регистры GPIO защищены, без EALLOW запись не выполняется, и компилятор об этом не предупредит.', f: rep(/(void InitEPwm1Gpio\(void\)\s*\{\s*\n)[ \t]*EALLOW;[^\n]*\n/, '$1') },
+    { t: 'Общий пуск счетчиков', ch: 'Удалите <code>CpuSysRegs.PCLKCR0.bit.TBCLKSYNC = 1</code>.', ex: 'Счетчик стоит, импульсов и прерываний нет.', why: 'TBCLKSYNC = 0 останавливает все ePWM, чтобы их можно было настроить и запустить одновременно.', f: rep(/^[ \t]*CpuSysRegs\.PCLKCR0\.bit\.TBCLKSYNC = 1;.*\n/m, '') },
+    { t: 'Без InitSysCtrl()', ch: 'Удалите вызов <code>InitSysCtrl()</code>.', ex: 'Записи в ePWM не выполняются, через 13,1 мс сброс по сторожевому таймеру.', why: 'InitSysCtrl() настраивает тактирование, подает такт на периферию и отключает сторожевой таймер.', f: rep(/^[ \t]*InitSysCtrl\(\);.*\n/m, '') },
+    { t: 'Обработчик не назначен', ch: 'Удалите <code>PieVectTable.EPWM1_INT = &amp;epwm1_isr</code>.', ex: 'Первое же прерывание уходит в обработчик по умолчанию, процессор останавливается.', why: 'Таблица векторов связывает источник прерывания с адресом функции.', f: rep(/^[ \t]*PieVectTable\.EPWM1_INT = &epwm1_isr;.*\n/m, '') },
+    { t: 'Прерывания в ядре', ch: 'Удалите <code>IER |= M_INT3</code> или <code>EINT</code>.', ex: 'ШИМ работает с заполнением 0,5, обработчик не вызывается. В сообщениях указана причина.', why: 'Путь прерывания: ePWM → PIE (PIEIER) → ядро (IER) → глобальное разрешение (INTM).', f: rep(/^[ \t]*IER \|= M_INT3;.*\n/m, '') },
+    { t: 'Несимметричный ШИМ', ch: '<code>CTRMODE = TB_COUNT_UP</code>, вместо <code>CAD = AQ_SET</code> задайте <code>ZRO = AQ_SET</code>.', ex: 'Частота 19,996 кГц: при счете вверх период равен TBPRD + 1 такт.', why: 'При счете вверх-вниз период 2·TBPRD, импульс симметричен относительно нуля счетчика. Для тока это важно: середина импульса совпадает с моментом измерения.', f: function (c) { var a = rep('TB_COUNT_UPDOWN;', 'TB_COUNT_UP;')(c); return a ? rep('EPwm1Regs.AQCTLA.bit.CAD = AQ_SET;', 'EPwm1Regs.AQCTLA.bit.ZRO = AQ_SET;')(a) : null; } },
+    { t: 'Перемодуляция', ch: '<code>m_index = 1.1f</code>.', ex: 'В вершинах синусоиды CMPA больше TBPRD, импульсы пропадают, ток искажается.', why: 'Заполнение надо ограничивать в программе: аппаратура не сделает этого за вас.', f: rep(/m_index\s*=\s*0\.8f/, 'm_index   = 1.1f') }
+  ];
+  function renderExps() {
+    var h = '<p class="note" style="margin:0 0 12px">Каждый опыт меняет одну строку исходного текста и запускает модель. Сначала предскажите результат, затем проверьте его по осциллографу, сообщениям и окну регистров. Кнопка «Исходный текст» над редактором возвращает исходную программу.</p><div class="exps">';
+    EXPS.forEach(function (x, ix) {
+      h += '<div class="exp"><h4>' + esc(x.t) + '</h4><div class="lbl">Изменение</div><p>' + x.ch + '</p><div class="lbl">Что увидите</div><p>' + esc(x.ex) + '</p><div class="lbl">Почему</div><p>' + esc(x.why) + '</p>' +
+        '<div class="row"><button class="btn" type="button" data-exp="' + ix + '">Применить к исходному тексту</button></div></div>';
+    });
+    $('#tp-exps').innerHTML = h + '</div>';
+  }
+  $('#tp-exps').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-exp]'); if (!b) return;
+    var x = EXPS[+b.dataset.exp], n = x.f(TEMPLATE);
+    if (n === null) { b.textContent = 'Строка не найдена'; return; }
+    replaceCode(n, 'исходный текст шага 1 с изменением опыта «' + x.t + '»', 'app.c', function () { runSim(); document.querySelector('[data-tab="meas"]').click(); });
+  });
+  renderExps();
+
+  $('#tp-help').innerHTML = '<div class="help">' +
+    '<h3>Что моделируется</h3><p>Кристалл TMS320F2837xD после <code>InitSysCtrl()</code>: SYSCLK = 200 МГц, EPWMCLK = 100 МГц, шаг модели 10 нс. На уровне регистров моделируются модули ePWM1–ePWM3 (счетчик, сравнение, формирователь, мертвое время, зона отключения TZ, цифровое сравнение DC, события и запуск АЦП), АЦП A (SOC0–SOC3, ADCINT1), eQEP1, компараторы CMPSS1–CMPSS8 с ЦАП и цифровыми фильтрами, Input X-BAR и ePWM X-BAR, мультиплексор GPIO, контроллер прерываний PIE (группы 1, 3, 5), регистры ядра IER, IFR, флаг INTM, защита EALLOW, сторожевой таймер. Силовая часть зависит от работы, выбранной на вкладке «Приемка»: стойка инвертора с R-L нагрузкой, H-мост с двигателем постоянного тока, трехфазный инвертор с асинхронным или синхронным двигателем, датчики тока на эффекте Холла, энкодер, нагрузочная машина.</p>' +
+    '<h3>Как исполняется программа</h3><p>Текст на C переводится в JavaScript и выполняется в модели. Обращения к регистрам идут через их описание: поле проверяется по имени и разрядности, запись в защищенный регистр без EALLOW не выполняется, как на кристалле. <code>main()</code> выполняется в момент t = 0, обработчик прерывания выполняется мгновенно в тот такт, когда ядро принимает прерывание. Фоновый цикл <code>for(;;)</code> в модели не исполняется. Переменная работы (например, <code>i_meas</code>, <code>pos_meas</code>) выводится на отдельный луч осциллографа; другую переменную можно выбрать на вкладке «Переменные».</p>' +
+    '<h3>Ограничения</h3><ul><li>Поддерживается подмножество C: переменные, массивы, функции, макросы #define, приведения типов, указатели на структуры регистров (<code>volatile struct EPWM_REGS *p</code>). Объявления структур, typedef, указатели на переменные и #if не поддерживаются.</li><li>Присваивание целой переменной усекает значение до разрядности типа (int - 16 разрядов, как в C28x, long - 32); операции ++ и -- разрядность не ограничивают; float вычисляется с двойной точностью.</li><li>Не моделируются время выполнения обработчика, CMPB, HRPWM, синхронизация модулей по фазе, АЦП B-D, CLA, DMA, таймеры CPU и интерфейсы связи.</li></ul>' +
+    '<h3>Перенос на кристалл</h3><p>Программа написана для заголовочных файлов C2000Ware (F2837xD_device.h, F2837xD_Examples.h). Скопируйте текст в проект CCS на основе примера из C2000Ware, добавьте файлы F2837xD_SysCtrl.c, F2837xD_PieCtrl.c, F2837xD_PieVect.c, F2837xD_DefaultISR.c, F2837xD_GlobalVariableDefs.c, F2837xD_CodeStartBranch.asm, F2837xD_usDelay.asm и соответствующие файлы компоновщика.</p>' +
+    '</div>';
+
+  draw();
+  setTimeout(runSim, 30);
+})();
+</script>
+<script>
+/*__ACCUI__*/
+</script>
